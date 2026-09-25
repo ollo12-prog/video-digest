@@ -56,6 +56,8 @@ python3 "$SKILL_DIR/scripts/digest.py" "<file>" "<out-dir>" --whisper
 python3 "$SKILL_DIR/scripts/digest.py" "<url-or-file>" "<out-dir>" --transcript-only
 ```
 
+Add `--start 12:30 --end 18:00` (SS, MM:SS or HH:MM:SS) to digest only part of a video.
+
 Use `--transcript-only` when the user just wants the text/captions, or the video is
 talking-head content with nothing on screen worth capturing.
 

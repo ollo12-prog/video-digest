@@ -20,7 +20,8 @@ import vtt
 
 
 def run(source: str, out_dir: Path, force_whisper: bool = False,
-        transcript_only: bool = False) -> Path:
+        transcript_only: bool = False, start: float | None = None,
+        end: float | None = None) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print("[digest] acquiring…", file=sys.stderr)
@@ -45,11 +46,12 @@ def run(source: str, out_dir: Path, force_whisper: bool = False,
         print("[digest] no captions — local whisper.cpp ASR", file=sys.stderr)
         import asr_whisper
         transcript = asr_whisper.transcribe(video, out_dir)
+    transcript = vtt.filter_range(transcript, start, end)
     (out_dir / "transcript.json").write_text(
         json.dumps(transcript, indent=2, ensure_ascii=False), encoding="utf-8")
 
     # VIDEO TRACK — the proven multi-pass.
-    visuals = [] if transcript_only else scan.scan(video, out_dir)
+    visuals = [] if transcript_only else scan.scan(video, out_dir, start, end)
 
     # MERGE.
     digest_md = merge.build(transcript, visuals, got.get("info", {}))
@@ -60,13 +62,24 @@ def run(source: str, out_dir: Path, force_whisper: bool = False,
     return out_path
 
 
+def _seconds(ts: str) -> float:
+    """'90', '1:30' or '1:02:30' -> seconds."""
+    secs = 0.0
+    for part in ts.split(":"):
+        secs = secs * 60 + float(part)
+    return secs
+
+
 if __name__ == "__main__":
-    flags = {"--whisper", "--transcript-only"}
-    args = [a for a in sys.argv[1:] if a not in flags]
-    if not args:
-        print("usage: digest.py <url-or-file> [<out_dir>] [--whisper] [--transcript-only]",
-              file=sys.stderr)
-        raise SystemExit(2)
-    out = Path(args[1]) if len(args) > 1 else Path("digest_out")
-    run(args[0], out, force_whisper="--whisper" in sys.argv,
-        transcript_only="--transcript-only" in sys.argv)
+    import argparse
+    ap = argparse.ArgumentParser(description="URL or local video -> digest.md")
+    ap.add_argument("source")
+    ap.add_argument("out_dir", nargs="?", default="digest_out")
+    ap.add_argument("--whisper", action="store_true", help="force local ASR even if captions exist")
+    ap.add_argument("--transcript-only", action="store_true",
+                    help="captions/ASR only: no video download, no vision model")
+    ap.add_argument("--start", type=_seconds, help="only this range: start (SS, MM:SS or HH:MM:SS)")
+    ap.add_argument("--end", type=_seconds, help="only this range: end")
+    a = ap.parse_args()
+    run(a.source, Path(a.out_dir), force_whisper=a.whisper,
+        transcript_only=a.transcript_only, start=a.start, end=a.end)
