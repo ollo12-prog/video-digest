@@ -9,7 +9,9 @@ from __future__ import annotations
 import json
 import os
 import platform
+import datetime
 import shutil
+import subprocess
 import sys
 import urllib.request
 
@@ -40,6 +42,18 @@ def main() -> int:
         else:
             ok = False
             print(f"  MISSING {tool} — install: {_hint(tool)}")
+
+    # YouTube breaks old yt-dlp releases often, and yt-dlp needs a JS runtime for it.
+    if shutil.which("yt-dlp"):
+        ver = subprocess.run(["yt-dlp", "--version"], capture_output=True, text=True).stdout.strip()
+        try:
+            age = (datetime.date.today() - datetime.date(*map(int, ver.split(".")[:3]))).days
+        except ValueError:
+            age = 0
+        if age > 60:
+            print(f"  WARN  yt-dlp {ver} is {age} days old — update it (pip install -U yt-dlp)")
+        if not (shutil.which("deno") or shutil.which("node")):
+            print("  WARN  no JS runtime (deno or node) — yt-dlp's YouTube extraction may fail")
 
     try:
         import requests  # noqa: F401

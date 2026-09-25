@@ -57,8 +57,8 @@ DESCRIBE_PROMPT = (
     "or diagram). Describe it for a reader who cannot see it. Reply with ONLY a "
     "compact JSON object, no prose:\n"
     '{"type": "slide|screenshot|ui|diagram", '
-    '"ocr": "<all on-screen text, verbatim, top-to-bottom; \\"\\" if none>", '
-    '"description": "<1-2 sentences: what this shows and its point>"}\n'
+    '"description": "<1-2 sentences: what this shows and its point>", '
+    '"ocr": "<all on-screen text, verbatim, top-to-bottom; \\"\\" if none>"}\n'
     "Transcribe text exactly as shown, including numbers and labels. Keep the "
     "description concrete. Output ONE minified line — no pretty-printing."
 )
@@ -160,7 +160,10 @@ def describe(path: Path, model: str | None = None) -> dict:
     """P5: {type, ocr, description}. Model overridable for benching."""
     import os
     model = model or os.environ.get("DESCRIBE_MODEL", DESCRIBE_MODEL)
-    # Dense frames need room for full OCR; only ~20 calls, so headroom is cheap.
+    # Description comes BEFORE ocr in the prompt: on very dense frames (2.5k+ chars)
+    # the OCR can run on until max_tokens, and a description placed after it was
+    # lost (6/32 empty on a coding video). More max_tokens doesn't help: the OCR
+    # just runs longer. Description-first: 0/32 empty.
     raw = _call(model, DESCRIBE_PROMPT, _b64(path), max_tokens=1200)
     data = _extract_json(raw)
     if data is not None:

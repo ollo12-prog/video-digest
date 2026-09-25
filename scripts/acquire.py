@@ -204,7 +204,9 @@ def download_url(
     video = _pick_video(out_dir)
     if video is None:
         raise SystemExit(
-            f"yt-dlp did not produce a video file in {out_dir} (exit {result.returncode})"
+            f"yt-dlp did not produce a video file in {out_dir} (exit {result.returncode}). "
+            "If YouTube errors (403, 'Sign in to confirm'), update yt-dlp first: "
+            "pip install -U yt-dlp"
         )
 
     subtitle = _pick_subtitle(out_dir)

@@ -72,17 +72,22 @@ def detect_cuts(video: str, threshold: float = 0.05, min_gap: float = 0.4
     return deduped
 
 
-def interval_sample(video: str, out_dir: Path, width: int) -> list[tuple[float, Path]]:
+def interval_sample(video: str, out_dir: Path, width: int,
+                    start: float | None = None, end: float | None = None
+                    ) -> list[tuple[float, Path]]:
     """v1 step 1: one thumb every SAMPLE_EVERY s in a single ffmpeg fps pass
     (far cheaper than N seeks). Returns (approx_timestamp, path) in order.
-    Timestamps are i*SAMPLE_EVERY — good to ~±SAMPLE_EVERY for labels/re-extract."""
+    Timestamps are start + i*SAMPLE_EVERY — good to ~±SAMPLE_EVERY for labels/re-extract.
+    Optional [start, end] (seconds) restricts sampling to that range of the video."""
+    rng = (["-ss", f"{start:.3f}"] if start else []) + (["-to", f"{end:.3f}"] if end else [])
     subprocess.run(
-        [FFMPEG, "-y", "-i", video, "-vf",
+        [FFMPEG, "-y", *rng, "-i", video, "-vf",
          f"fps=1/{SAMPLE_EVERY},scale={width}:-1", str(out_dir / "s_%05d.jpg")],
         capture_output=True,
     )
     thumbs = sorted(out_dir.glob("s_*.jpg"))
-    return [(i * SAMPLE_EVERY, p) for i, p in enumerate(thumbs)]
+    t0 = start or 0.0
+    return [(t0 + i * SAMPLE_EVERY, p) for i, p in enumerate(thumbs)]
 
 
 def extract(video: str, t: float, out_path: Path, width: int,
@@ -156,7 +161,8 @@ def _is_person_shot(rec: dict) -> bool:
             and bool(_PERSON_RE.match(rec["description"].strip())))
 
 
-def scan(video: str, out_dir: Path) -> list[dict]:
+def scan(video: str, out_dir: Path, start: float | None = None,
+         end: float | None = None) -> list[dict]:
     thumbs = out_dir / "thumbs"
     frames = out_dir / "frames"
     thumbs.mkdir(parents=True, exist_ok=True)
@@ -164,7 +170,7 @@ def scan(video: str, out_dir: Path) -> list[dict]:
 
     # 1. Interval sample (single ffmpeg pass) — the coverage backbone.
     print(f"[scan] 1: interval sampling every {SAMPLE_EVERY}s…", file=sys.stderr)
-    seq = interval_sample(video, thumbs, width=CLASSIFY_WIDTH)
+    seq = interval_sample(video, thumbs, width=CLASSIFY_WIDTH, start=start, end=end)
     print(f"[scan] {len(seq)} interval thumbs", file=sys.stderr)
 
     # 2. Novelty gate + persistence + heartbeat. Keep a frame that is novel (dHash

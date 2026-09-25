@@ -1,7 +1,7 @@
 ---
 name: video-digest
 version: "1.0.0"
-description: Turn a YouTube URL or local video into one digest.md — a timestamped transcript interleaved with described, deduped screenshots of every real on-screen visual (slide / screenshot / UI / diagram), talking-head filler filtered out Runs on any local OpenAI-compatible vision endpoint (LM Studio / Ollama / llama.cpp), no cloud APIs required.
+description: Turn a YouTube URL or local video into one digest.md — a timestamped transcript interleaved with described, deduped screenshots of every real on-screen visual (slide / screenshot / UI / diagram), talking-head filler filtered out; or just the timestamped transcript (--transcript-only, seconds, no GPU). Runs on any local OpenAI-compatible vision endpoint (LM Studio / Ollama / llama.cpp), no cloud APIs required.
 argument-hint: "<video-url-or-path> [out-dir]"
 allowed-tools: Bash, Read
 user-invocable: true
@@ -52,7 +52,14 @@ explicitly asks.
 python3 "$SKILL_DIR/scripts/digest.py" "<url-or-file>" "<out-dir>"
 # force local ASR even when captions exist:
 python3 "$SKILL_DIR/scripts/digest.py" "<file>" "<out-dir>" --whisper
+# transcript only (no video download, no vision model; seconds, not minutes):
+python3 "$SKILL_DIR/scripts/digest.py" "<url-or-file>" "<out-dir>" --transcript-only
 ```
+
+Add `--start 12:30 --end 18:00` (SS, MM:SS or HH:MM:SS) to digest only part of a video.
+
+Use `--transcript-only` when the user just wants the text/captions, or the video is
+talking-head content with nothing on screen worth capturing.
 
 Then `Read <out-dir>/digest.md`. Progress prints to stderr (the classify pass is
 the bulk of the time).
