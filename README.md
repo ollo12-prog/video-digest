@@ -54,6 +54,9 @@ Or directly:
 ```bash
 python3 scripts/digest.py "https://www.youtube.com/watch?v=…" out/
 # → out/digest.md
+
+# just the transcript: captions only, no video download, no vision model needed
+python3 scripts/digest.py "https://youtu.be/…" out/ --transcript-only
 ```
 
 Config (all optional, sensible defaults) is env-based — `VLM_ENDPOINT`,
