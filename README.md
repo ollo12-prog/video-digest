@@ -8,14 +8,19 @@ talking-head/filler frames filtered out.
 Runs fully local against any **OpenAI-compatible vision endpoint** — no cloud
 keys. Fits a **16 GB GPU** (or runs on CPU with ~24 GB RAM).
 
-```
-**[06:00]** so I go a lot deeper than your standard plan mode stuff…
+Example: an excerpt of the digest for a coding video (rendered):
 
-#### 🖼 Visual @ 06:00 — screenshot
-![hit_006.jpg](frames/hit_006_t0600.jpg)
-> On-screen text: Claude Code — passport-stamp cards slam in per stop…
-A terminal showing a Claude Code planning session for a trip-atlas app.
-```
+> **[10:45]** and also just to verify like it can
+> **[10:46]** actually do the upload second I wanted
+>
+> #### 🖼 Visual @ 10:48 — screenshot
+> ![Terminal frame captured by video-digest](docs/example-frame.jpg)
+>
+> > **On-screen text:** Arduino Board Setup /home/ladyada/Arduino/libraries/Adafruit_TestBed/examples/I2C_Scan … Now let's compile and upload the I2C_Scan example …
+>
+> A terminal window displaying Arduino CLI commands for compiling, uploading, and checking serial output for an I2C_Scan example, with a Bash command prompt at the bottom asking for user input.
+
+<sub>Frame from [“Fully automating Arduino development”](https://www.youtube.com/watch?v=Yt8mc5v7MYA) by Adafruit Industries, licensed [CC BY](https://creativecommons.org/licenses/by/3.0/).</sub>
 
 ## What you need
 
