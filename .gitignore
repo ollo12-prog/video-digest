@@ -1,0 +1,18 @@
+# generated pipeline output
+/out/
+/digest_out/
+digest_out/
+
+# secrets / local config
+.env
+*.env
+
+# python
+__pycache__/
+*.pyc
+
+# bench artifact from a default frames-poc run (regenerated; notes/ copy is committed)
+/bench/describe-bench.md
+
+# bench/ is local-only — versioned in its own repo, never published
+/bench/
